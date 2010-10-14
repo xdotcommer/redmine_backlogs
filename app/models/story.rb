@@ -173,8 +173,7 @@ class Story < Issue
       extras = ['and not issues.position is NULL and issues.position <= ?', self.position]
     end
 
-    puts "\n\ncount: #{Story.condition(self.project, self.fixed_version_id, extras).inspect}\n\n"
-    @rank = Issue.count(:conditions => Story.condition(self.project, self.fixed_version_id, extras), :joins => :status)
+    @rank = Issue.count(:conditions => Story.condition(self.project, self.sprint_id, extras), :joins => :status)
 
     return @rank
   end
