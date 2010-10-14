@@ -4,21 +4,21 @@ class Story < Issue
     acts_as_list :scope => :project
     belongs_to :sprint
 
-    def self.condition(project_id, sprint_id, extras=[])
+    def self.condition(project, sprint_id, extras=[])
       if sprint_id.nil?  
         c = ["
           parent_id is NULL
-          and project_id = ?
+          and project_id in (select id from project where lft >= ? and rgt <= ?)
           and tracker_id in (?)
           and sprint_id is NULL
-          and is_closed = ?", project_id, Story.trackers, false]
+          and is_closed = ?", project.lft, project.rgt, Story.trackers, false]
       else
         c = ["
           parent_id is NULL
-          and project_id = ?
+          and project_id in (select id from project where lft >= ? and rgt <= ?)
           and tracker_id in (?)
           and sprint_id = ?",
-          project_id, Story.trackers, sprint_id]
+          project.lft, project.rgt, Story.trackers, sprint_id]
       end
 
       if extras.size > 0
