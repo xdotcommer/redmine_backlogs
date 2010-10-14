@@ -5,40 +5,40 @@ class Story < Issue
     belongs_to :sprint
 
     def self.condition(project, sprint_id, extras=[])
+      if extras.size > 0
+        extra_sql = extras[0]
+        extra_params = extras[1..-1]
+      else
+        extra_sql = ''
+        extra_params = []
+      end
+
       if sprint_id.nil?  
-        c = ["
+        return ["
           parent_id is NULL
-          and project_id in (select id from project where lft >= ? and rgt <= ?)
+          and project_id in (select id from projects where lft >= ? and rgt <= ?)
           and tracker_id in (?)
           and sprint_id is NULL
-          and is_closed = ?", project.lft, project.rgt, Story.trackers, false]
+          and is_closed = ? #{extra_sql}", project.lft, project.rgt, Story.trackers, false] + extra_params
       else
-        c = ["
+        return ["
           parent_id is NULL
-          and project_id in (select id from project where lft >= ? and rgt <= ?)
+          and project_id in (select id from projects where lft >= ? and rgt <= ?)
           and tracker_id in (?)
-          and sprint_id = ?",
-          project.lft, project.rgt, Story.trackers, sprint_id]
+          and sprint_id = ? #{extra_sql}",
+          project.lft, project.rgt, Story.trackers, sprint_id] + extra_params
       end
-
-      if extras.size > 0
-        c[0] += ' ' + extras.shift
-        c += extras
-      end
-
-      return c
     end
 
     # this forces NULLS-LAST ordering
     ORDER = 'case when issues.position is null then 1 else 0 end ASC, case when issues.position is NULL then issues.id else issues.position end ASC'
 
-    def self.backlog(project_id, sprint_id, options={})
+    def self.backlog(project, sprint_id, options={})
       stories = []
-
 
       Story.find(:all,
             :order => Story::ORDER,
-            :conditions => Story.condition(project_id, sprint_id),
+            :conditions => Story.condition(project, sprint_id),
             :joins => :status,
             :limit => options[:limit]).each_with_index {|story, i|
         story.rank = i + 1
@@ -49,11 +49,11 @@ class Story < Issue
     end
 
     def self.product_backlog(project, limit=nil)
-      return Story.backlog(project.id, nil, :limit => limit)
+      return Story.backlog(project, nil, :limit => limit)
     end
 
     def self.sprint_backlog(sprint, options={})
-      return Story.backlog(sprint.project.id, sprint.id, options)
+      return Story.backlog(sprint.project, sprint.id, options)
     end
 
     def self.create_and_position(params)
@@ -173,8 +173,8 @@ class Story < Issue
       extras = ['and not issues.position is NULL and issues.position <= ?', self.position]
     end
 
-    puts "@@@@ #{Story.condition(self.project.id, self.fixed_version_id, extras).inspect}"
-    @rank = Issue.count(:conditions => Story.condition(self.project.id, self.fixed_version_id, extras), :joins => :status)
+    puts "\n\ncount: #{Story.condition(self.project, self.fixed_version_id, extras).inspect}\n\n"
+    @rank = Issue.count(:conditions => Story.condition(self.project, self.fixed_version_id, extras), :joins => :status)
 
     return @rank
   end
@@ -182,7 +182,7 @@ class Story < Issue
   def self.at_rank(project_id, sprint_id, rank)
     return Story.find(:first,
                       :order => Story::ORDER,
-                      :conditions => Story.condition(project_id, sprint_id),
+                      :conditions => Story.condition(Project.find(project_id), sprint_id),
                       :joins => :status,
                       :limit => 1,
                       :offset => rank - 1)

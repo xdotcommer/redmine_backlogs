@@ -76,11 +76,17 @@ def task_position(task)
 end
 
 def story_position(story)
-  p1 = Story.backlog(story.project, story.sprint_id).select{|s| s.id == story.id}[0].rank
+  stories = Story.backlog(story.project, story.sprint_id)
+  p1 = stories.select{|s| s.id == story.id}[0].rank
   p2 = story.rank
+  puts "\n\nRanks: #{stories.collect{|c| c.rank}.inspect}, bulk=#{p1}, indiv=#{p2}\n\n"
   p1.should == p2
+  
+  by_rank = Story.at_rank(story.project_id, story.sprint_id, p1)
 
-  Story.at_rank(story.project_id, story.sprint_id, p1).id.should == story.id
+  puts "\n\nBy rank: #{by_rank.id} vs. #{story.id}\n\n"
+  by_rank.id.should == story.id
+
   return p1
 end
 
