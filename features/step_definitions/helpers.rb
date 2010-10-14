@@ -79,12 +79,9 @@ def story_position(story)
   stories = Story.backlog(story.project, story.sprint_id)
   p1 = stories.select{|s| s.id == story.id}[0].rank
   p2 = story.rank
-  puts "\n\nRanks: #{stories.collect{|c| c.rank}.inspect}, bulk=#{p1}, indiv=#{p2}\n\n"
   p1.should == p2
   
   by_rank = Story.at_rank(story.project_id, story.sprint_id, p1)
-
-  puts "\n\nBy rank: #{by_rank.id} vs. #{story.id}\n\n"
   by_rank.id.should == story.id
 
   return p1
