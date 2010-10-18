@@ -11,6 +11,8 @@ module BacklogsPlugin
         locals[:sprint] = nil
         locals[:webcal] = (context[:request].ssl? ? 'webcals' : 'webcal')
 
+        return '' unless locals[:project].module_enabled? 'backlogs'
+
         user = User.find_by_id(context[:request].session[:user_id])
         locals[:key] = user ? user.api_key : nil
 
@@ -30,6 +32,9 @@ module BacklogsPlugin
 
       def view_issues_show_details_bottom(context={ })
         issue = context[:issue]
+
+        return '' unless issue.project.module_enabled? 'backlogs'
+
         snippet = ''
 
         if issue.is_story?
@@ -48,6 +53,9 @@ module BacklogsPlugin
       def view_issues_form_details_bottom(context={ })
         snippet = ''
         issue = context[:issue]
+
+        return '' unless issue.project.module_enabled? 'backlogs'
+
         #project = context[:project]
 
         #developers = project.members.select {|m| m.user.allowed_to?(:log_time, project)}.collect{|m| m.user}
@@ -109,6 +117,8 @@ module BacklogsPlugin
       def controller_issues_new_after_save(context={ })
         params = context[:params]
         issue = context[:issue]
+
+        return unless issue.project.module_enabled? 'backlogs'
 
         if issue.is_story?
           if params[:link_to_original]
