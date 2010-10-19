@@ -132,7 +132,7 @@ module Backlogs
               connection.execute "update issues set tracker_id = #{connection.quote(Task.tracker)}, sprint_id = #{connection.quote(story.sprint_id)} where id = #{connection.quote(self.id)}"
             end
 
-            touched_sprints = [self.root_id, self.root_id_was].compact.uniq.collect{|s| Story.find(s).fixed_version}.compact
+            touched_sprints = [self.root_id, self.root_id_was].compact.uniq.collect{|s| Story.find(s).sprint}.compact
           end
         end
   
