@@ -19,7 +19,7 @@ module BacklogsPlugin
         q = context[:request].session[:query]
         if q && q[:filters] && context[:project]
           sprint = q[:filters]['sprint_id']
-          if sprint && sprint[:operator] == '=' && sprint[:values].size == 1
+          if !sprint.blank? && sprint[:operator] == '=' && sprint[:values].size == 1
             locals[:sprint] = context[:project].sprint(sprint[:values][0])
           end
         end
