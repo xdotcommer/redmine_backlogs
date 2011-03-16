@@ -1,4 +1,5 @@
 <%- charts = (burndown.is_a?(Array) ? burndown : [burndown]) %>
+<% raise charts.inspect %>
 <%- dataseries = charts[0].series(:all).collect{|series| series.name } %>
 
   <%= stylesheet_link_tag 'jqplot.css', :plugin => 'redmine_backlogs' %>
