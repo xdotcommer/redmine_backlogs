@@ -88,6 +88,7 @@ Redmine::Plugin.register :redmine_backlogs do
     permission :view_scrum_statistics,   { :rb_statistics => :show }
   end
 
+  menu :project_menu, :new_issue, "/projects/razoo-issue-tracker/issues/new?issue[tracker_id]=2&issue[description]=h3.+Rationale+%26+Intent%0A%0ADescribe+the+business+problem+you+are+trying+to+solve+and+the+feature+you+are+suggesting+to+solve+it.%0A%0Ah3.+Acceptance+Criteria%0A%0A%23+It+should+do+stuff", :caption => :label_issue_new, :param => :project_id
   menu :project_menu, :backlogs, { :controller => :rb_master_backlogs, :action => :show }, :caption => :label_backlogs, :after => :issues, :param => :project_id
   menu :application_menu, :backlogs, { :controller => :rb_statistics, :action => :show}, :caption => :label_scrum_statistics
 end
